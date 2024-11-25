@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>539計算</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        label, input, button {
+            font-size: 20px;
+            margin: 5px 0;
+        }
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+        }
+
+        
+    </style>
+</head>
+<body>
+    <h1>投注計算</h1>
+    <form id="calcForm">
+        <label for="target">預期投入本金</label><br>
+        <input type="number" id="target" name="target" placeholder="輸入投注成本" required><br>
+        <button type="submit">計算</button>
+    </form>
+
+    <div class="result" id="result" style="display: none;">
+        <p><span>第一次為</span> &nbsp;<strong><font size="5"><u><span id="closestX"></span><strong>碰</strong></font></u></strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span>此次成本為</span> &nbsp;<strong>$</strong><strong><font size="5"><span id="A1"></span></font></strong></p>&thinsp;
+        <p><span>第二次為</span> &nbsp;<strong><font size="5"><u><span id="closestX2"></span><strong>碰</strong></font></u></strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span>此次成本為</span> &nbsp;<strong>$</strong><strong><font size="5"><span id="A2"></span></font></strong></p>&thinsp;
+        <p><span>第三次為</span> &nbsp;<strong><font size="5"><u><span id="closestX6"></span><strong>碰</strong></font></u></strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span>此次成本為</span> &nbsp;<strong>$</strong><strong><font size="5"><span id="A3"></span></font></strong></p>&thinsp;
+        <p><span>第四次為</span> &nbsp;<strong><font size="5"><u><span id="closestX18"></span><strong>碰</strong></font></u></strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span>此次成本為</span> &nbsp;<strong>$</strong><strong><font size="5"><span id="A4"></span></font></strong></p>&thinsp;
+        <p><span>最終成本</span> &nbsp;<strong><font size="6"><strong>$</strong><u><span id="calculatedResult"></span></font></u></strong></p>&thinsp;
+        <p><span>10萬占比:</span> &nbsp;<strong><font size="5"><u><span id="percent100k"></span><strong>%</strong></font></u></strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span>此次投入成本為</span> &nbsp;<strong>$</strong><strong><font size="5"><span id="xPercent100k"></span></font></strong>&nbsp;&nbsp;&nbsp;&nbsp;<span>退差額</span> &nbsp;<strong>$</strong><strong><font size="5"><span id="qx100k"></span></font></strong></p>&thinsp;
+        <p><span>20萬占比:</span> &nbsp;<strong><font size="5"><u><span id="percent200k"></span><strong>%</strong></font></u></strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span>此次投入成本為</span> &nbsp;<strong>$</strong><strong><font size="5"><span id="xPercent200k"></span></font></strong>&nbsp;&nbsp;&nbsp;&nbsp;<span>退差額</span> &nbsp;<strong>$</strong><strong><font size="5"><span id="qx200k"></span></font></strong></p>&thinsp;
+        <p><span>50萬占比:</span> &nbsp;<strong><font size="5"><u><span id="percent500k"></span><strong>%</strong></font></u></strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span>此次投入成本為</span> &nbsp;<strong>$</strong><strong><font size="5"><span id="xPercent500k"></span></font></strong>&nbsp;&nbsp;&nbsp;&nbsp;<span>退差額</span> &nbsp;<strong>$</strong><strong><font size="5"><span id="qx500k"></span></font></strong></p>&thinsp; 
+    </div>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+
+    <div class="container">
+        <h1>獲利比計算</h1>
+        <label for="target">獲利值</label>
+        <input type="number" id="target1" placeholder="輸入目標值" />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <label for="percentage">成本佔比(%)：</label>
+        <input type="number" id="percentage1" placeholder="輸入百分比值" />
+
+        <button onclick="calculateResult()">計算結果</button>
+        <div class="result" id="result1" style="display: none;"> 
+            <p><span>獲利佔比為</span> &nbsp;<strong>$</strong><strong><font size="6"><u><span id="aa1"></span><strong></p>
+        </div>
+        
+    </div>
+
+    <script>
+        
+        function findClosestX(target) {
+            let closestX = 0; // 儲存最佳的 x 值
+            let closestResult = 0; // 儲存最接近的結果
+                      
+            // 從 x = 1 開始遞增，計算每個結果
+            for (let x = 1; ; x++) {
+                // 計算公式結果
+                const result = (x * 2166.53) + (2 * x * 2166.53) + (6 * x * 2166.53) + (18 * x * 2166.53);
+
+                // 如果結果超過目標值，結束迴圈
+                if (result > target) break;
+
+                // 更新最佳值
+                closestX = x;
+                closestResult = result;
+            }
+
+            return { x: closestX, result: closestResult };
+        }
+        function calculatePercent(value, total) {
+            // 計算百分比並取小數點後1位（無條件捨去）
+            return Math.floor((value / total) * 1000) / 10;
+        }
+
+            document.getElementById("calcForm").addEventListener("submit", function (event) {
+            event.preventDefault(); // 防止表單提交刷新頁面
+            const target = parseFloat(document.getElementById("target").value);
+            const { x, result } = findClosestX(target);
+            const thousandthsFormat = (value) => {
+            value = parseInt(value)
+            if(isNaN(value)) return
+            return value.toLocaleString()
+        }
+
+            // 計算固定值占比
+            const percent100k = calculatePercent(100000, target);
+            const percent200k = calculatePercent(200000, target);
+            const percent500k = calculatePercent(500000, target);
+
+            // 計算 Calculated Result × 固定值占比
+            const resultTimesPercent100k = Math.ceil((percent100k / 100) * result);
+            const resultTimesPercent200k = Math.ceil((percent200k / 100) * result);
+            const resultTimesPercent500k = Math.ceil((percent500k / 100) * result);
+
+             // 計算 投入成本與實際成本差額
+            const q100k = 100000 - resultTimesPercent100k ;
+            const q200k  = 200000 - resultTimesPercent200k ;
+            const q500k  = 500000 - resultTimesPercent500k ;
+
+            // 更新前台結果
+            document.getElementById("closestX").textContent = x;
+            document.getElementById("closestX2").textContent = x*2;
+            document.getElementById("closestX6").textContent = x*6;
+            document.getElementById("closestX18").textContent = x*18;
+            document.getElementById("A1").textContent = thousandthsFormat(Math.ceil(x*2166.53));
+            document.getElementById("A2").textContent = thousandthsFormat(Math.ceil(2*x*2166.53));
+            document.getElementById("A3").textContent = thousandthsFormat(Math.ceil(6*x*2166.53));
+            document.getElementById("A4").textContent = thousandthsFormat(Math.ceil(18*x*2166.53));
+            document.getElementById("calculatedResult").textContent = thousandthsFormat(Math.ceil(result.toFixed(2)));
+            document.getElementById("percent100k").textContent = percent100k.toFixed(1);
+            document.getElementById("percent200k").textContent = percent200k.toFixed(1);
+            document.getElementById("percent500k").textContent = percent500k.toFixed(1);
+            document.getElementById("xPercent100k").textContent = thousandthsFormat(resultTimesPercent100k.toFixed(1));
+            document.getElementById("xPercent200k").textContent = thousandthsFormat(resultTimesPercent200k.toFixed(1));
+            document.getElementById("xPercent500k").textContent = thousandthsFormat(resultTimesPercent500k.toFixed(1));   
+            document.getElementById("qx100k").textContent = thousandthsFormat(q100k.toFixed(1));
+            document.getElementById("qx200k").textContent = thousandthsFormat(q200k.toFixed(1));
+            document.getElementById("qx500k").textContent = thousandthsFormat(q500k.toFixed(1));     
+            document.getElementById("result").style.display = "block";
+        });
+
+        function calculateResult() {
+
+            const target = parseFloat(document.getElementById('target1').value);
+            const percentage = parseFloat(document.getElementById('percentage1').value);
+
+            if (isNaN(target) || isNaN(percentage)) {
+                document.getElementById('result').innerText = '請輸入有效數值！';
+                return;
+            }
+            const result = (target * percentage) / 100;
+            document.getElementById("aa1").textContent = (Math.ceil(result).toLocaleString());    
+            //document.getElementById('result1').innerText = `獲利分潤為：${result}`;
+            document.getElementById("result1").style.display = "block";
+        }
+
+        </script>
+</body>
+</html>
